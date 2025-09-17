@@ -17,7 +17,7 @@ class Player extends SpriteAnimationComponent with HasGameReference {
   Future<void> onLoad() async {
     super.onLoad();
 
-    // Загружаем обе текстуры
+    // Загружаем обе текстуры.  
     final frame1 = await Sprite.load('dino_frame_1.png');
     final frame2 = await Sprite.load('dino_frame_2.png');
     
