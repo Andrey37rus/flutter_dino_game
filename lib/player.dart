@@ -10,7 +10,7 @@ class Player extends SpriteAnimationComponent with HasGameReference {
 
   Player({super.position}) : super(
     size: Vector2.all(200),
-    anchor: Anchor.bottomCenter, // Якорь внизу для правильных прыжков
+    // anchor: Anchor.bottomCenter, // Якорь внизу для правильных прыжков
   );
 
   @override
