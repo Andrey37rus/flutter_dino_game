@@ -9,7 +9,7 @@ class Player extends SpriteAnimationComponent with HasGameReference {
   bool _isOnGround = true;
 
   Player({super.position}) : super(
-    size: Vector2.all(200),
+    size: Vector2.all(70),
     // anchor: Anchor.bottomCenter, // Якорь внизу для правильных прыжков
   );
 
@@ -18,8 +18,8 @@ class Player extends SpriteAnimationComponent with HasGameReference {
     super.onLoad();
 
     // Загружаем обе текстуры.  
-    final frame1 = await Sprite.load('dino_frame_1.png');
-    final frame2 = await Sprite.load('dino_frame_2.png');
+    final frame1 = await Sprite.load('player/new_dino_frame_2.png');
+    final frame2 = await Sprite.load('player/new_dino_frame_3.png');
     
     // Создаем анимацию из двух кадров
     animation = SpriteAnimation.spriteList(

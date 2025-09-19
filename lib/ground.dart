@@ -15,7 +15,7 @@ class InfiniteGround extends PositionComponent with HasGameReference {
     super.onLoad();
     
     // Загружаем текстуру дороги
-    groundSprite = await Sprite.load('road_frame.png');
+    groundSprite = await Sprite.load('roads/road.png');
     
     // Определяем размер дороги (под размер вашего изображения)
     final groundSize = Vector2(500, 200);
