@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 
 class InfiniteGround extends PositionComponent with HasGameReference {
-  final double speed;
+  double speed;
   late final Sprite groundSprite;
   final List<GroundTile> tiles = [];
 

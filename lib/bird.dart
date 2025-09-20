@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 
 class Bird extends SpriteAnimationComponent with HasGameReference {
-  final double speed;
+  double speed;
   
   Bird({
     required this.speed,
@@ -29,16 +29,16 @@ class Bird extends SpriteAnimationComponent with HasGameReference {
     );
   }
 
-  // @override
-  // void update(double dt) {
-  //   super.update(dt);
+  @override
+  void update(double dt) {
+    super.update(dt);
     
-  //   // Простое движение птицы слева направо
-  //   position.x -= speed * dt;
+    // Простое движение птицы слева направо
+    position.x -= speed * dt;
     
-  //   // Если птица улетела за экран, удаляем ее
-  //   if (position.x < -size.x) {
-  //     removeFromParent();
-  //   }
-  // }
+    // Если птица улетела за экран, удаляем ее
+    if (position.x < -size.x) {
+      removeFromParent();
+    }
+  }
 }
