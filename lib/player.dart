@@ -119,7 +119,7 @@ class Player extends SpriteAnimationComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
     
-    if (other is Grass && isAlive) {
+    if (other is Grass && isAlive || other is Bird && isAlive) {
       _handleObstacleCollision();
     }
   }
@@ -132,6 +132,10 @@ class Player extends SpriteAnimationComponent
 
     // ✅ НЕМЕДЛЕННО останавливаем все движущиеся объекты
     _stopAllMovingObjects();
+
+    // ✅ ВЫЗЫВАЕМ endGame() для завершения игры и скрытия кнопки паузы
+    game.endGame();
+
 
     // Анимация смерти
     add(OpacityEffect.fadeOut(

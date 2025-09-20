@@ -1,6 +1,7 @@
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-class Bird extends SpriteAnimationComponent with HasGameReference {
+class Bird extends SpriteAnimationComponent with HasGameReference, CollisionCallbacks {
   double speed;
   
   Bird({
@@ -27,6 +28,14 @@ class Bird extends SpriteAnimationComponent with HasGameReference {
       stepTime: 0.15,
       loop: true,
     );
+
+    // Добавляем хитбокс для кактуса
+    add(RectangleHitbox(
+      size: Vector2(width * 0.8, height * 0.9),
+      position: Vector2(width * 0.1, height * 0.1),
+    )..collisionType = CollisionType.passive // Оптимизация производительности
+      // ..renderShape = true // оставить для дебаг
+    );
   }
 
   @override
@@ -40,5 +49,7 @@ class Bird extends SpriteAnimationComponent with HasGameReference {
     if (position.x < -size.x) {
       removeFromParent();
     }
+
+    // debugMode = true; // оставить для дебаг
   }
 }
