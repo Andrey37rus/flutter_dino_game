@@ -134,7 +134,7 @@ class Player extends SpriteAnimationComponent
     _stopAllMovingObjects();
 
     // ✅ ВЫЗЫВАЕМ endGame() для завершения игры и скрытия кнопки паузы
-    game.endGame();
+    game.endGame(); 
 
 
     // Анимация смерти
@@ -145,12 +145,6 @@ class Player extends SpriteAnimationComponent
         repeatCount: 3,
       ),
     ));
-
-    // Пауза перед завершением
-    Future.delayed(const Duration(seconds: 1), () {
-      game.pauseEngine();
-      print('Game Over! Столкновение с кактусом!');
-    });
   }
 
   // ✅ метод для остановки всех движущихся объектов
@@ -160,14 +154,22 @@ class Player extends SpriteAnimationComponent
       cactus.speed = 0;
     }
 
-    final ground = game.children.whereType<InfiniteGround>().firstOrNull;
-    if (ground != null) {
-      ground.speed = 0;
-    }
+    // final ground = game.children.whereType<InfiniteGround>().firstOrNull;
+    // if (ground != null) {
+    //   ground.speed = 0;
+    // }
 
     final birds = game.children.whereType<Bird>();
     for (final bird in birds) {
       bird.speed = 0;
     }
+  }
+
+  void resetAnimation() {
+    isAlive = true;
+    animation = _runningAnimation; // Возвращаем анимацию бега
+    opacity = 1.0; // Сбрасываем прозрачность
+    // Удаляем все эффекты (если есть)
+    removeWhere((component) => component is OpacityEffect);
   }
 }

@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:dino_runner/bird.dart';
 import 'package:dino_runner/cloud.dart';
 import 'package:dino_runner/control_button/pause_button.dart';
+import 'package:dino_runner/game_over_text.dart';
 import 'package:dino_runner/grass.dart';
 import 'package:dino_runner/ground.dart';
 import 'package:dino_runner/player.dart';
@@ -24,9 +25,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   late PauseButton pauseButton;
 
   final double gameSpeed = 300;
-
   late Timer obstacleTimer;
-
 
   bool gameStarted = false;
   bool isPaused = false;
@@ -41,31 +40,24 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
     
-    // Создаем бесконечную дорогу
     ground = InfiniteGround(
       speed: gameSpeed,
-      position: Vector2(0, size.y - 100), // Размещаем дорогу снизу экрана
+      position: Vector2(0, size.y - 100),
     );
     add(ground);
 
-    // Создаем бесконечные облака
     clouds = InfiniteClouds(
       speed: gameSpeed,
-      position: Vector2(0, 450), // Позиция в верхней части экрана
+      position: Vector2(0, 450),
     );
     add(clouds);
 
-    // Создаем солнце в правом верхнем углу
-    sun = Sun(
-      position: Vector2(250, 350),
-    );
+    sun = Sun(position: Vector2(250, 350));
     add(sun);
 
     player = Player(position: Vector2(0, -100));
-    add(player); // Добавляем в игру
+    add(player);
 
-
-    // Создаем стартовый экран
     startScreen = StartScreen(
       onStartPressed: startGame,
       gameSize: size,
@@ -73,33 +65,28 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     add(startScreen);
   }
 
-  // Метод по таймеру спавнит препятсвие
   void startObstacleSpawning() {
     void scheduleNextSpawn() {
       final randomDuration = Duration(seconds: random.nextInt(4) + 3);
       
       obstacleTimer = Timer(randomDuration, () {
-        if (!isPaused && gameStarted && !gameOver) { // Проверяем что игра не на паузе
-          // Спавним случайное препятствие
+        if (!isPaused && gameStarted && !gameOver) {
           if (random.nextBool()) {
             spawnGrass();
           } else {
             spawnBird();
           }
         }
-        // Планируем следующий спавн
         scheduleNextSpawn();
       });
     }
-    // Запускаем первый спавн
     scheduleNextSpawn();
   }
 
-  // Метод для создания кактусов
   void spawnGrass() {
     final grass = Grass(
       speed: gameSpeed,
-      position: Vector2(size.x + 50, size.y - 150), // Спавним за пределами экрана справа
+      position: Vector2(size.x + 50, size.y - 150),
     );
     add(grass);
   }
@@ -107,12 +94,11 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   void spawnBird() {
     final bird = Bird(
       speed: gameSpeed * 1.2,
-      position: Vector2(size.x + 50, 650), // Спавним за пределами экрана справа
+      position: Vector2(size.x + 50, 650),
     );
     add(bird);
   }
 
-  // Этот метод срабатывает при тапе в ЛЮБОМ месте экрана
   @override
   void onTapDown(TapDownEvent event) {
     if (gameStarted && !isPaused && player.isAlive && !gameOver) {
@@ -121,7 +107,6 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     super.onTapDown(event);
   }
 
-  // Start Game
   void startGame() {
     if (gameStarted) return;
 
@@ -129,33 +114,25 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     isPaused = false;
     gameOver = false;
   
-    // Удаляем стартовый экран
     remove(startScreen);
 
-    // Добавляем кнопку паузы в правый верхний угол
     pauseButton = PauseButton(
       onPressed: togglePause,
       isPaused: isPaused,
-      position: Vector2(size.x - 60, 80), // Позиция в правом верхнем углу
-      size: Vector2(40, 40), // Размер кнопки
+      position: Vector2(size.x - 60, 80),
+      size: Vector2(40, 40),
     );
     add(pauseButton);
     
-    // Запускаем спавн препятствий
     startObstacleSpawning();
-    
     resumeEngine();
   }
 
-  // Метод для переключения паузы
   void togglePause() {
-    if (!gameStarted || gameOver) return; // Нельзя поставить на паузу если игра не началась
+    if (!gameStarted || gameOver) return;
 
     isPaused = !isPaused;
-
-    // ОБНОВЛЯЕМ состояние кнопки!
     pauseButton.isPaused = isPaused;
-
     
     if (isPaused) {
       pauseEngine();
@@ -164,29 +141,56 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     }
   }
 
-  // Метод завершения игры (вызывается при столкновении)
   void endGame() {
     if (gameOver) return;
 
     gameOver = true;
     isPaused = true;
     
-    // Удаляем кнопку паузы
     if (pauseButton.isMounted) {
       remove(pauseButton);
     }
     
-    // Останавливаем спавн препятствий
     obstacleTimer.cancel();
-    
-    // // Ставим игру на паузу
-    // pauseEngine();
-    
-    // Здесь позже добавим экран Game Over
-    print('Game Over!');
+    showGameOverWithDelay();
   }
 
-  // Не забываем освободить ресурсы таймера
+  void showGameOverWithDelay() {
+    final gameOverScreen = GameOverText(gameSize: size);
+    add(gameOverScreen);
+
+    Timer(const Duration(seconds: 2), () {
+      if (gameOver) {
+        resetGame();
+      }
+    });
+  }
+
+  void resetGame() {
+    // Очищаем все препятствия
+    children.whereType<Grass>().forEach(remove);
+    children.whereType<Bird>().forEach(remove);
+    
+    // Удаляем Game Over экран
+    children.whereType<GameOverText>().forEach(remove);
+
+    // Сбрасываем анимацию игрока
+    player.resetAnimation();
+    
+    // Сбрасываем состояние игры
+    gameStarted = false;
+    gameOver = false;
+    isPaused = false;
+    
+    // Показываем стартовый экран
+    add(startScreen);
+    
+    // Перезапускаем движок
+    resumeEngine();
+    
+    print('Game reset to start screen');
+  }
+
   @override
   void onRemove() {
     obstacleTimer.cancel();
