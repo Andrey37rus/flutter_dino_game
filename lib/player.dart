@@ -11,22 +11,25 @@ class Player extends SpriteAnimationComponent
   
   // Физика прыжка
   final double _gravity = 1000;
-  final double _jumpSpeed = -700;
+  final double _jumpSpeed = - 450;
   double _velocity = 0;
   bool _isOnGround = true;
   bool isAlive = true;
+  late double _groundLevel;
 
   // ✅ Добавляем переменные для спрайтов и анимаций
   late SpriteAnimation _idleAnimation; // Анимация из одного кадра
   late SpriteAnimation _runningAnimation;
 
   Player({super.position}) : super(
-    size: Vector2.all(70),
+    size: Vector2.all(60),
   );
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    _groundLevel = position.y;
 
     // ✅ Загружаем все текстуры
     final idleFrame = await Sprite.load('player/new_dino_frame_1.png');
@@ -56,10 +59,6 @@ class Player extends SpriteAnimationComponent
     )..collisionType = CollisionType.active
       // ..renderShape = false // оставить для дебаг 
     );
-    
-    
-    // Устанавливаем начальную позицию
-    position = Vector2(100, game.size.y - 150);
   }
 
   @override
@@ -71,9 +70,8 @@ class Player extends SpriteAnimationComponent
     _velocity += _gravity * dt;
     position.y += _velocity * dt;
 
-    final groundLevel = game.size.y - 150;
-    if (position.y >= groundLevel) {
-      position.y = groundLevel;
+    if (position.y >= _groundLevel) {
+      position.y = _groundLevel;
       _velocity = 0;
       _isOnGround = true;
       

@@ -12,12 +12,19 @@ class StartScreen extends Component {
   Future<void> onLoad() async {
     super.onLoad();
     
-    // Создаем кнопку старта
+    // Создаем кнопку старта с относительными размерами
+    final buttonWidth = gameSize.x * 0.2; // 50% ширины экрана
+    final buttonHeight = gameSize.y * 0.10; // 8% высоты экрана
+    final buttonYPosition = gameSize.y * 0.5; // 60% от высоты экрана
+    
     final button = StartButton(
       onPressed: onStartPressed,
       text: 'START GAME',
-      position: Vector2(gameSize.x / 2 - 100, gameSize.y / 2 + 50),
-      size: Vector2(200, 60),
+      position: Vector2(
+        gameSize.x / 2 - buttonWidth / 2, // Центрируем по горизонтали
+        buttonYPosition,
+      ),
+      size: Vector2(buttonWidth, buttonHeight),
     );
     
     add(button);
@@ -27,15 +34,16 @@ class StartScreen extends Component {
   void render(Canvas canvas) {
     // Полупрозрачный черный фон
     final backgroundPaint = Paint()
-      ..color = const Color(0x80000000) // Черный с 50% прозрачностью
+      ..color = const Color(0x80000000)
       ..style = PaintingStyle.fill;
     
     canvas.drawRect(Rect.fromLTWH(0, 0, gameSize.x, gameSize.y), backgroundPaint);
 
-    // Заголовок игры
+    // Заголовок игры с относительным размером шрифта
+    final titleFontSize = gameSize.y * 0.06; // 6% высоты экрана
     final titleStyle = TextStyle(
       color: Colors.white,
-      fontSize: 36,
+      fontSize: titleFontSize,
       fontWeight: FontWeight.bold,
     );
     
@@ -50,31 +58,9 @@ class StartScreen extends Component {
       canvas,
       Offset(
         gameSize.x / 2 - titlePainter.width / 2,
-        gameSize.y / 2 - 100,
+        gameSize.y * 0.3, // 30% от высоты экрана
       ),
     );
-
-    // Инструкция
-    final instructionStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 20,
-    );
-    
-    final instructionSpan = TextSpan(text: 'Tap to jump!', style: instructionStyle);
-    final instructionPainter = TextPainter(
-      text: instructionSpan,
-      textDirection: TextDirection.ltr,
-    );
-    
-    instructionPainter.layout();
-    instructionPainter.paint(
-      canvas,
-      Offset(
-        gameSize.x / 2 - instructionPainter.width / 2,
-        gameSize.y / 2 - 30,
-      ),
-    );
-
     super.render(canvas);
   }
 }

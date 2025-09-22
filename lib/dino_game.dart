@@ -42,20 +42,32 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     
     ground = InfiniteGround(
       speed: gameSpeed,
-      position: Vector2(0, size.y - 100),
+      position: Vector2(
+        0, 
+        size.y  *  0.7,
+      ),
     );
     add(ground);
 
     clouds = InfiniteClouds(
       speed: gameSpeed,
-      position: Vector2(0, 450),
+      position: Vector2(
+        size.x *  - 0.50,
+        size.y * 0.2,
+      ),
     );
     add(clouds);
 
-    sun = Sun(position: Vector2(250, 350));
+    sun = Sun(position: Vector2(
+      size.x * 0.8,
+      size.y * 0.15,
+    ));
     add(sun);
 
-    player = Player(position: Vector2(0, -100));
+    player = Player(position: Vector2(
+      size.x * 0.1, 
+      size.y * 0.59,
+    ));
     add(player);
 
     startScreen = StartScreen(
@@ -86,7 +98,10 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   void spawnGrass() {
     final grass = Grass(
       speed: gameSpeed,
-      position: Vector2(size.x + 50, size.y - 150),
+      position: Vector2(
+        size.x + 50, 
+        size.y - 175
+      ),
     );
     add(grass);
   }
@@ -94,7 +109,10 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   void spawnBird() {
     final bird = Bird(
       speed: gameSpeed * 1.2,
-      position: Vector2(size.x + 50, 650),
+      position: Vector2(
+        size.x * 1.0, 
+        size.y * 0.6,
+      ),
     );
     add(bird);
   }
@@ -119,7 +137,10 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     pauseButton = PauseButton(
       onPressed: togglePause,
       isPaused: isPaused,
-      position: Vector2(size.x - 60, 80),
+      position: Vector2(
+        size.x - 60, 
+        size.y * 0.1
+      ),
       size: Vector2(40, 40),
     );
     add(pauseButton);
