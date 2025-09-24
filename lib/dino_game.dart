@@ -8,6 +8,7 @@ import 'package:dino_runner/game_over_text.dart';
 import 'package:dino_runner/grass.dart';
 import 'package:dino_runner/ground.dart';
 import 'package:dino_runner/player.dart';
+import 'package:dino_runner/score_display.dart';
 import 'package:dino_runner/start_screen.dart';
 import 'package:dino_runner/sunny.dart';
 import 'package:flame/events.dart';
@@ -22,18 +23,14 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   Sun? _sun;
   StartScreen? _startScreen;
   PauseButton? _pauseButton;
-
-  // Геттеры для безопасного доступа к компонентам
-  Player get player => _player!;
-  InfiniteGround get ground => _ground!;
-  InfiniteClouds get clouds => _clouds!;
-  Sun get sun => _sun!;
-  StartScreen get startScreen => _startScreen!;
-  PauseButton? get pauseButton => _pauseButton;
+  ScoreDisplay? _scoreDisplay;
 
   // Игровые параметры
   final double gameSpeed = 400;
-  late Timer obstacleTimer;
+  var _currentScore = 0;
+  Timer? _scoreTimer;
+  Timer? obstacleTimer;
+
 
   // Состояние игры
   bool gameStarted = false;
@@ -56,6 +53,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     _sun = Sun();
     _player = Player();
     _startScreen = StartScreen(onStartPressed: startGame);
+    _scoreDisplay = ScoreDisplay();
 
     // Добавляем компоненты в игру
     add(_ground!);
@@ -63,6 +61,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     add(_sun!);
     add(_player!);
     add(_startScreen!);
+    add(_scoreDisplay!);
 
     // Обновляем позиции элементов после добавления
     updateAllElementsPosition();
@@ -118,6 +117,10 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     if (_pauseButton?.isMounted == true) {
       _pauseButton!.position = Vector2(size.x - 60, size.y * 0.1);
     }
+    // Отображение очков в левом верхнем углу 
+    if (_scoreDisplay?.isMounted == true) {
+      _scoreDisplay!.position = Vector2(size.x * 0.025, size.y * 0.1);
+    }
   }
 
   /// Запускает систему спавна препятствий
@@ -137,6 +140,17 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
       });
     }
     scheduleNextSpawn();
+  }
+
+  void startTimerScore() {
+    // Инициализируем таймер очков (но не запускаем сразу)
+    _scoreTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      print('Ilog очки: $_currentScore');
+      if (gameStarted && !isPaused && !gameOver) {
+        _currentScore++;
+        _scoreDisplay?.updateScore(_currentScore);
+      }
+    });
   }
 
   /// Создает препятствие "трава"
@@ -180,6 +194,8 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     gameStarted = true;
     isPaused = false;
     gameOver = false;
+    _currentScore = 0;
+    _scoreDisplay?.reset();
 
     // Убираем стартовый экран
     if (_startScreen != null) {
@@ -197,6 +213,10 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
 
     // Запускаем спавн препятствий
     startObstacleSpawning();
+
+    // Запускаем счет очков
+    startTimerScore();
+
     resumeEngine();
   }
 
@@ -240,7 +260,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     }
 
     // Останавливаем таймер препятствий
-    obstacleTimer.cancel();
+    obstacleTimer?.cancel();
 
     // Показываем экран "Game Over"
     showGameOverWithDelay();
@@ -248,7 +268,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
 
   /// Показывает экран "Game Over" с задержкой
   void showGameOverWithDelay() {
-    final gameOverScreen = GameOverText();
+    final gameOverScreen = GameOverText(score: _currentScore);
     add(gameOverScreen);
 
     // Через 2 секунды перезапускаем игру
@@ -279,6 +299,8 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     gameStarted = false;
     gameOver = false;
     isPaused = false;
+    _currentScore = 0; // Сбрасываем очки
+    _scoreDisplay?.reset();
 
     // ✅ Запускаем землю
     if (_ground != null) {
@@ -305,7 +327,8 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   @override
   void onRemove() {
     // Очищаем ресурсы при удалении игры
-    obstacleTimer.cancel();
+    obstacleTimer?.cancel();
+    _scoreTimer?.cancel(); 
     super.onRemove();
   }
 }

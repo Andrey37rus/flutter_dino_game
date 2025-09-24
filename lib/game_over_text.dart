@@ -2,10 +2,11 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 class GameOverText extends PositionComponent {
-  GameOverText();
+  GameOverText({required this.score});
 
   late double gameOverFontSize;
   late TextPainter gameOverPainter;
+  final int score;
   
   @override
   Future<void> onLoad() async {
@@ -34,13 +35,6 @@ class GameOverText extends PositionComponent {
       color: Colors.red,
       fontSize: gameOverFontSize,
       fontWeight: FontWeight.bold,
-      // shadows: [
-      //   Shadow(
-      //     blurRadius: 10, 
-      //     color: Colors.black, 
-      //     offset: const Offset(2, 2),
-      //   ),
-      // ],
     );
     
     final gameOverSpan = TextSpan(text: 'GAME OVER', style: gameOverStyle);
@@ -53,6 +47,12 @@ class GameOverText extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
+
+    final game = findGame();
+    if (game == null) return;
+    
+    final gameSize = game.size;
+
     // Полупрозрачный черный фон
     final backgroundPaint = Paint()
       ..color = const Color(0x80000000)
@@ -68,6 +68,28 @@ class GameOverText extends PositionComponent {
     final textY = centerY - gameOverPainter.height / 2;
     
     gameOverPainter.paint(canvas, Offset(textX, textY));
+
+    // Заголовок игры
+    final titleStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+    );
+
+    final titleSpan = TextSpan(text: 'DINO SCORE: $score', style: titleStyle);
+    final titlePainter = TextPainter(
+      text: titleSpan,
+      textDirection: TextDirection.ltr,
+    );
+    
+    titlePainter.layout();
+    titlePainter.paint(
+      canvas,
+      Offset(
+        gameSize.x / 2 - titlePainter.width / 2,
+        gameSize.y * 0.3,
+      ),
+    );
     
     super.render(canvas);
   }
