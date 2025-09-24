@@ -5,6 +5,7 @@ import 'package:dino_runner/ground.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 class Player extends SpriteAnimationComponent 
     with HasGameReference<DinoGame>, CollisionCallbacks {
@@ -104,6 +105,7 @@ class Player extends SpriteAnimationComponent
     if (_isOnGround && isAlive) {
       _velocity = _jumpSpeed;
       _isOnGround = false;
+      FlameAudio.play('jump.mp3');
       
       // ✅ Меняем на "статичную" анимацию при прыжке
       _switchToIdleAnimation();
@@ -129,6 +131,8 @@ class Player extends SpriteAnimationComponent
     
     // ✅ Обрабатываем столкновение с препятствиями
     if ((other is Grass || other is Bird) && isAlive) {
+      // ✅ Воспроизводим звук столкновения
+      FlameAudio.play('game_over.mp3');
       _handleObstacleCollision();
     }
   }

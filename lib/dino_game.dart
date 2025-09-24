@@ -13,6 +13,7 @@ import 'package:dino_runner/start_screen.dart';
 import 'package:dino_runner/sunny.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/widgets.dart';
 
 class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
@@ -31,7 +32,6 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   Timer? _scoreTimer;
   Timer? obstacleTimer;
 
-
   // Состояние игры
   bool gameStarted = false;
   bool isPaused = false;
@@ -46,6 +46,15 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
     print('DinoGame: onLoad called, initial size: $size');
+
+    await FlameAudio.audioCache.loadAll([
+      'fon_music.mp3',
+      'jump.mp3',
+      'game_over.mp3',
+    ]);
+
+    // Запуск фоновой музыки
+    FlameAudio.bgm.play('fon_music.mp3');
 
     // Инициализируем все игровые компоненты
     _ground = InfiniteGround(speed: gameSpeed);
