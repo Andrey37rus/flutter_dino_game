@@ -46,6 +46,16 @@ class InfiniteGround extends PositionComponent with HasGameReference {
       }
     }
   }
+
+  // ✅ Метод для остановки движения
+  void stop() {
+    speed = 0;
+  }
+
+  // ✅ Метод для возобновления движения
+  void start(double newSpeed) {
+    speed = newSpeed;
+  }
 }
 
 class GroundTile extends SpriteComponent {

@@ -1,12 +1,9 @@
 import 'package:flame/components.dart';
 
 class Sun extends SpriteAnimationComponent with HasGameReference {
-  Sun({
-    required Vector2 position,
-  }) : super(
-        position: position,
-        size: Vector2(92, 84), // Размер солнца
-      );
+  Sun() : super(
+    size: Vector2(92, 84), // ✅ Фиксированный размер как у травы
+  );
 
   @override
   Future<void> onLoad() async {
@@ -22,5 +19,14 @@ class Sun extends SpriteAnimationComponent with HasGameReference {
       stepTime: 0.5, // Смена кадра каждые полсекунды
       loop: true,
     );
+  }
+
+  // ✅ Методы для остановки/запуска анимации (опционально)
+  void stopAnimation() {
+    animation?.stepTime = double.infinity; // Останавливаем анимацию
+  }
+  
+  void startAnimation() {
+    animation?.stepTime = 0.5; // Возобновляем анимацию
   }
 }

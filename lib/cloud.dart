@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 
 class InfiniteClouds extends PositionComponent with HasGameReference {
-  final double speed;
+  double speed;
   late final Sprite cloudSprite;
   final List<CloudTile> tiles = [];
 
@@ -9,6 +9,7 @@ class InfiniteClouds extends PositionComponent with HasGameReference {
     required this.speed,
     super.position,
   });
+  
 
   @override
   Future<void> onLoad() async {
@@ -31,6 +32,16 @@ class InfiniteClouds extends PositionComponent with HasGameReference {
       tiles.add(cloudTile);
     }
   }
+
+    // ✅ Метод для остановки движения
+    void stop() {
+      speed = 0;
+    }
+
+    // ✅ Метод для возобновления движения
+    void start(double newSpeed) {
+      speed = newSpeed;
+    }
 
   @override
   void update(double dt) {

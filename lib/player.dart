@@ -11,25 +11,31 @@ class Player extends SpriteAnimationComponent
   
   // Физика прыжка
   final double _gravity = 1000;
-  final double _jumpSpeed = - 450;
+  final double _jumpSpeed = -450;
   double _velocity = 0;
   bool _isOnGround = true;
   bool isAlive = true;
-  late double _groundLevel;
+  double groundYOffset = 0; // ✅ Добавляем свойство для смещения
 
-  // ✅ Добавляем переменные для спрайтов и анимаций
-  late SpriteAnimation _idleAnimation; // Анимация из одного кадра
+  double get _groundLevel {
+    final ground = game.children.whereType<InfiniteGround>().firstOrNull;
+    if (ground != null) {
+      return ground.position.y - size.y + groundYOffset; // ✅ Используем смещение
+    }
+    return position.y;
+  }
+
+  // Анимации
+  late SpriteAnimation _idleAnimation;
   late SpriteAnimation _runningAnimation;
 
   Player({super.position}) : super(
-    size: Vector2.all(60),
+    size: Vector2.all(60), // Размер игрока
   );
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-
-    _groundLevel = position.y;
 
     // ✅ Загружаем все текстуры
     final idleFrame = await Sprite.load('player/new_dino_frame_1.png');
@@ -38,9 +44,9 @@ class Player extends SpriteAnimationComponent
     
     // Создаем анимации
     _idleAnimation = SpriteAnimation.spriteList(
-      [idleFrame], // ✅ Всего один кадр для "статичного" состояния
-      stepTime: 1.0, // ✅ Длинный stepTime чтобы не мигало
-      loop: false, // ✅ Не зацикливаем
+      [idleFrame], // Один кадр для "статичного" состояния
+      stepTime: 1.0, // Длинный stepTime чтобы не мигало
+      loop: false, // Не зацикливаем
     );
     
     _runningAnimation = SpriteAnimation.spriteList(
@@ -57,7 +63,6 @@ class Player extends SpriteAnimationComponent
       size: Vector2(width * 0.7, height * 0.6),
       position: Vector2(width * 0.15, height * 0.2),
     )..collisionType = CollisionType.active
-      // ..renderShape = false // оставить для дебаг 
     );
   }
 
@@ -67,11 +72,16 @@ class Player extends SpriteAnimationComponent
 
     if (!isAlive) return;
     
+    // ✅ Применяем гравитацию
     _velocity += _gravity * dt;
     position.y += _velocity * dt;
 
-    if (position.y >= _groundLevel) {
-      position.y = _groundLevel;
+    // ✅ Динамически вычисляем уровень земли каждый кадр
+    final currentGroundLevel = _groundLevel;
+
+    // ✅ Проверяем столкновение с землей
+    if (position.y >= currentGroundLevel) {
+      position.y = currentGroundLevel;
       _velocity = 0;
       _isOnGround = true;
       
@@ -87,9 +97,9 @@ class Player extends SpriteAnimationComponent
         _switchToIdleAnimation();
       }
     }
-    // debugMode = true; //оставить для дебага
   }
 
+  /// Прыжок игрока
   void jump() {
     if (_isOnGround && isAlive) {
       _velocity = _jumpSpeed;
@@ -117,25 +127,26 @@ class Player extends SpriteAnimationComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
     
-    if (other is Grass && isAlive || other is Bird && isAlive) {
+    // ✅ Обрабатываем столкновение с препятствиями
+    if ((other is Grass || other is Bird) && isAlive) {
       _handleObstacleCollision();
     }
   }
 
+  /// Обработка столкновения с препятствием
   void _handleObstacleCollision() {
     isAlive = false;
 
     // ✅ Меняем на "статичную" анимацию при столкновении
     _switchToIdleAnimation();
 
-    // ✅ НЕМЕДЛЕННО останавливаем все движущиеся объекты
+    // ✅ Останавливаем все движущиеся объекты
     _stopAllMovingObjects();
 
-    // ✅ ВЫЗЫВАЕМ endGame() для завершения игры и скрытия кнопки паузы
-    game.endGame(); 
+    // ✅ Завершаем игру
+    game.endGame();
 
-
-    // Анимация смерти
+    // Анимация смерти (мигание)
     add(OpacityEffect.fadeOut(
       EffectController(
         duration: 1,
@@ -145,29 +156,44 @@ class Player extends SpriteAnimationComponent
     ));
   }
 
-  // ✅ метод для остановки всех движущихся объектов
+  /// Останавливает все движущиеся объекты в игре
   void _stopAllMovingObjects() {
+    // Останавливаем кактусы
     final allCacti = game.children.whereType<Grass>();
     for (final cactus in allCacti) {
       cactus.speed = 0;
     }
 
-    // final ground = game.children.whereType<InfiniteGround>().firstOrNull;
-    // if (ground != null) {
-    //   ground.speed = 0;
-    // }
-
+    // Останавливаем птиц
     final birds = game.children.whereType<Bird>();
     for (final bird in birds) {
       bird.speed = 0;
     }
+
+    // Останавливаем землю (если нужно)
+    // final ground = game.children.whereType<InfiniteGround>().firstOrNull;
+    // if (ground != null) {
+    //   ground.speed = 0;
+    // }
   }
 
+  /// Сбрасывает анимацию игрока при рестарте игры
   void resetAnimation() {
     isAlive = true;
     animation = _runningAnimation; // Возвращаем анимацию бега
     opacity = 1.0; // Сбрасываем прозрачность
-    // Удаляем все эффекты (если есть)
-    removeWhere((component) => component is OpacityEffect);
+    
+    // Удаляем все эффекты
+    removeWhere((component) => component is Effect);
+    
+    // Сбрасываем физику
+    _velocity = 0;
+    _isOnGround = true;
+  }
+
+  /// Для отладки: получает текущую позицию земли
+  double getDebugGroundLevel() {
+    final ground = game.children.whereType<InfiniteGround>().firstOrNull;
+    return ground?.position.y ?? 0;
   }
 }
