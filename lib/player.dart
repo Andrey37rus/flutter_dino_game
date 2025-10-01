@@ -148,7 +148,7 @@ class Player extends SpriteAnimationComponent
     _stopAllMovingObjects();
 
     // ✅ Завершаем игру
-    game.endGame();
+    // game.endGame();
 
     // Анимация смерти (мигание)
     add(OpacityEffect.fadeOut(
