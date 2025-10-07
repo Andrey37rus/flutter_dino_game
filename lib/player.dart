@@ -1,5 +1,6 @@
 import 'package:dino_runner/bird.dart';
 import 'package:dino_runner/dino_game.dart';
+import 'package:dino_runner/game_config.dart';
 import 'package:dino_runner/grass.dart';
 import 'package:dino_runner/ground.dart';
 import 'package:flame/collisions.dart';
@@ -16,17 +17,16 @@ class Player extends SpriteAnimationComponent
   double _velocity = 0;
   bool _isOnGround = true;
   bool isAlive = true;
-  double groundYOffset = 0; // ✅ Добавляем свойство для смещения
+  double groundYOffset = GameConfig.groundYOffset;
 
   double get _groundLevel {
     final ground = game.children.whereType<InfiniteGround>().firstOrNull;
     if (ground != null) {
-      return ground.position.y - size.y + groundYOffset; // ✅ Используем смещение
+      return ground.position.y - size.y + groundYOffset;
     }
     return position.y;
   }
 
-  // Анимации
   late SpriteAnimation _idleAnimation;
   late SpriteAnimation _runningAnimation;
 
@@ -38,7 +38,6 @@ class Player extends SpriteAnimationComponent
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // ✅ Загружаем все текстуры
     final idleFrame = await Sprite.load('player/new_dino_frame_1.png');
     final frame2 = await Sprite.load('player/new_dino_frame_2.png');
     final frame3 = await Sprite.load('player/new_dino_frame_3.png');
@@ -88,7 +87,7 @@ class Player extends SpriteAnimationComponent
       
       // ✅ Возвращаем анимацию бега при приземлении
       if (isAlive && animation != _runningAnimation) {
-        animation = _runningAnimation;
+        _switchToRunningAnimation();
       }
     } else {
       _isOnGround = false;
@@ -131,7 +130,6 @@ class Player extends SpriteAnimationComponent
     
     // ✅ Обрабатываем столкновение с препятствиями
     if ((other is Grass || other is Bird) && isAlive) {
-      // ✅ Воспроизводим звук столкновения
       FlameAudio.play('game_over.mp3');
       _handleObstacleCollision();
     }
@@ -193,11 +191,5 @@ class Player extends SpriteAnimationComponent
     // Сбрасываем физику
     _velocity = 0;
     _isOnGround = true;
-  }
-
-  /// Для отладки: получает текущую позицию земли
-  double getDebugGroundLevel() {
-    final ground = game.children.whereType<InfiniteGround>().firstOrNull;
-    return ground?.position.y ?? 0;
   }
 }

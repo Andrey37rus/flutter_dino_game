@@ -2,7 +2,7 @@ import 'package:flame/components.dart';
 
 class Sun extends SpriteAnimationComponent with HasGameReference {
   Sun() : super(
-    size: Vector2(92, 84), // ✅ Фиксированный размер как у травы
+    size: Vector2(92, 84),
   );
 
   @override

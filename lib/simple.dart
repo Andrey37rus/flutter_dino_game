@@ -133,23 +133,23 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   }
 
   /// Запускает систему спавна препятствий
-  void startObstacleSpawning() {
-    void scheduleNextSpawn() {
-      final randomDuration = Duration(seconds: random.nextInt(4) + 3);
+  // void startObstacleSpawning() {
+  //   void scheduleNextSpawn() {
+  //     final randomDuration = Duration(seconds: random.nextInt(4) + 3);
 
-      obstacleTimer = Timer(randomDuration, () {
-        if (!isPaused && gameStarted && !gameOver) {
-          if (random.nextBool()) {
-            spawnGrass();
-          } else {
-            spawnBird();
-          }
-        }
-        scheduleNextSpawn();
-      });
-    }
-    scheduleNextSpawn();
-  }
+  //     obstacleTimer = Timer(randomDuration, () {
+  //       if (!isPaused && gameStarted && !gameOver) {
+  //         if (random.nextBool()) {
+  //           spawnGrass();
+  //         } else {
+  //           spawnBird();
+  //         }
+  //       }
+  //       scheduleNextSpawn();
+  //     });
+  //   }
+  //   scheduleNextSpawn();
+  // }
 
   void startTimerScore() {
     // Инициализируем таймер очков (но не запускаем сразу)
@@ -163,16 +163,16 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   }
 
   /// Создает препятствие "трава"
-  void spawnGrass() {
-    final grass = Grass(
-      speed: gameSpeed,
-      position: Vector2(
-        size.x + 50, // За пределами правого края экрана
-        size.y - 175, // На уровне земли
-      ),
-    );
-    add(grass);
-  }
+  // void spawnGrass() {
+  //   final grass = Grass(
+  //     speed: gameSpeed,
+  //     position: Vector2(
+  //       size.x + 50, // За пределами правого края экрана
+  //       size.y - 175, // На уровне земли
+  //     ),
+  //   );
+  //   add(grass);
+  // }
 
   /// Создает препятствие "птица"
   void spawnBird() {
@@ -221,7 +221,7 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     add(_pauseButton!);
 
     // Запускаем спавн препятствий
-    startObstacleSpawning();
+    // startObstacleSpawning();
 
     // Запускаем счет очков
     startTimerScore();

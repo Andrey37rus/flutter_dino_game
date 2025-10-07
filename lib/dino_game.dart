@@ -19,6 +19,9 @@ import 'package:flutter/widgets.dart';
 
 class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   InfiniteGround? _ground;
+  InfiniteClouds? _cloud;
+  Sun? _sun;
+  Player? _player;
 
   Vector2? _gameSize;
 
@@ -26,10 +29,18 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
 
   PauseButton? _pauseButton;
 
-    // Состояние игры
+  ScoreDisplay? _scoreDisplay;
+
   bool gameStarted = false;
   bool isPaused = false;
   bool gameOver = false;
+
+  Timer? _scoreTimer;
+  Timer? obstacleTimer;
+
+  var _currentScore = 0;
+
+final Random random = Random();
 
   @override
   Color backgroundColor() => GameConfig.backgroundColor;
@@ -46,6 +57,22 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     _ground = ground;
     add(ground);
 
+    final cloud = InfiniteClouds(speed: GameConfig.cloudSpeed);
+    _cloud = cloud;
+    add(cloud);
+
+    final sun = Sun();
+    _sun = sun;
+    add(sun);
+
+    final player = Player();
+    _player = player;
+    add(player);
+
+    final scoreDisplay = ScoreDisplay();
+    _scoreDisplay = scoreDisplay;
+    add(scoreDisplay);
+
   }
 
   @override
@@ -59,12 +86,83 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   void updateAllElementsPosition() {
     final gameSize = _gameSize;
     final ground = _ground;
+    final cloud = _cloud;
+    final sun = _sun;
+    final player = _player;
+    final scoreDisplay = _scoreDisplay;
     
     if (gameSize == null) return;
     
     if (ground != null && ground.isMounted) {
       ground.position = Vector2(0, gameSize.y * 0.7);
     }
+
+    if (cloud != null && cloud.isMounted) {
+      cloud.position = Vector2(gameSize.x * -0.50, gameSize.y * 0.2);
+    }
+
+    if (sun != null && sun.isMounted) {
+      sun.position = Vector2(
+        gameSize.x * 0.8 - sun.size.x / 2,
+        gameSize.y * 0.20 - sun.size.y / 2,
+      );
+    }
+
+    if (player != null && player.isMounted && ground != null && ground.isMounted) {
+       final groundYOffset = GameConfig.groundYOffset;
+      player.position = Vector2(
+        gameSize.x * 0.1,
+        ground.position.y - player.size.y - groundYOffset,
+      );
+    }
+
+    if (scoreDisplay != null && scoreDisplay.isMounted) {
+      scoreDisplay.position = Vector2(gameSize.x * 0.025, gameSize.y * 0.1);
+    }
+  }
+
+  /// Запускает систему спавна препятствий
+  void startObstacleSpawning() {
+    void scheduleNextSpawn() {
+      final randomDuration = Duration(seconds: random.nextInt(4) + 3);
+
+      obstacleTimer = Timer(randomDuration, () {
+        if (!isPaused && gameStarted && !gameOver) {
+          if (random.nextBool()) {
+            spawnGrass();
+          } else {
+            spawnBird();
+          }
+        }
+        scheduleNextSpawn();
+      });
+    }
+    scheduleNextSpawn();
+  }
+
+  void spawnGrass() {
+    final ground = _ground;
+    if (ground != null) {
+      final grass = Grass(
+        speed: GameConfig.groundSpeed,
+        position: Vector2(
+          size.x * 1.0, // За пределами правого края экрана
+          size.y - 175, // На уровне земли
+        ),
+      );
+      add(grass);
+    }
+  }
+
+  void spawnBird() {
+    final bird = Bird(
+      speed: GameConfig.groundSpeed * 1.5, // Птица летит быстрее
+      position: Vector2(
+        size.x * 1.0, // За пределами правого края экрана
+        size.y * 0.6, // В воздухе
+      ),
+    );
+    add(bird);
   }
 
   void startGame() {
@@ -74,7 +172,6 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     isPaused = false;
     gameOver = false;
 
-    // Убираем стартовый экран
     if (_startScreen != null) {
       remove(_startScreen!);
     }
@@ -91,7 +188,17 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     );
     add(_pauseButton!);
 
+    startTimerScore();
+    startObstacleSpawning();
 
+  }
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    if (gameStarted && !isPaused && _player != null && _player!.isAlive && !gameOver) {
+      _player!.jump();
+    }
+    super.onTapDown(event);
   }
 
   void togglePause() {
@@ -105,5 +212,23 @@ class DinoGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     } else {
       resumeEngine();
     }
+  }
+
+  void startTimerScore() {
+    _scoreTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      print('*******$_scoreTimer');
+      if (gameStarted && !isPaused && !gameOver) {
+        _currentScore++;
+        _scoreDisplay?.updateScore(_currentScore);
+      } 
+    });
+  }
+
+  @override
+  void onRemove() {
+    // Очищаем ресурсы при удалении игры
+    obstacleTimer?.cancel();
+    _scoreTimer?.cancel(); 
+    super.onRemove();
   }
 }

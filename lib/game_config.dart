@@ -6,6 +6,10 @@ class GameConfig {
   
   // Скорости
   static const double groundSpeed = 400;
+  static const double cloudSpeed = 300;
+
+  // Относительная позиция обьектов к земле (смещение обьектов чуть ниже земли)
+  static const double groundYOffset = 18;
 
   
   // Размеры
